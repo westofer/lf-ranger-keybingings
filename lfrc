@@ -1,0 +1,416 @@
+# interpreter for shell commands (needs to be POSIX compatible)
+set shell sh
+set drawbox
+
+# set '-eu' options for shell commands
+# These options are used to have safer shell commands. Option '-e' is used to
+# exit on error and option '-u' is used to give error for unset variables.
+# Option '-f' disables pathname expansion which can be useful when $f, $fs, and
+# $fx variables contain names with '*' or '?' characters. However, this option
+# is used selectively within individual commands as it can be limiting at
+# times.
+set shellopts '-eu'
+set icons
+set number
+set relativenumber
+
+# set internal field separator (IFS) to "\n" for shell commands
+# This is useful to automatically split file names in $fs and $fx properly
+# since default file separator used in these variables (i.e. 'filesep' option)
+# is newline. You need to consider the values of these options and create your
+# commands accordingly.
+set ifs "\n"
+
+# leave some space at the top and the bottom of the screen
+set scrolloff 10
+
+# use enter for shell commands
+map <enter> shell
+
+# execute current file (must be executable)
+map x $$f
+map X !$f
+
+###########################################################################
+#                             Basic                                       #
+###########################################################################
+# commented with '#^' commands aren'tfound in lf but present in ranger
+# commands with '###' are commented in the default ranger config
+# commands with a "#$" in the end are default in lf but
+
+map Q quit #quitall
+map q quit                #
+map ZZ quit
+map ZQ quit
+
+map R reload              #$
+map <C-r> reload          #$
+map <C-l> redraw          #$
+map <C-c> cmd-interrupt   #$
+map <esc> cmd-escape      #$
+# map ~ set viewmode!
+
+# map i display_file
+# map <A-j> scroll_preview 1
+# map <A-k> scroll_preview -1
+ map ? doc
+# map W display_log
+# map w taskview_open
+map S push :shell<enter>$SHELL<enter>
+
+map \:  read             #$
+map \;  read
+map \!  shell
+map @   shell           #TODO: should add current file as an arg
+map \#  shell-wait
+map s   shell
+#map r  chain draw_possible_programs; console open_with%space TODO
+map f find
+map c 
+map cd push :read<enter>cd<space> #TODO: doesn't work!
+
+#map <C-p> chain console; eval fm.ui.console.history_move(-1)
+
+## Change the line mode
+map Mf :set info
+#^map Mi :set fileinfo
+map Mm :set info time
+map Mh :set info time #^humanreadablemtime
+#^map Mp :set permissions
+map Ms :set info size:time
+map MH :set size:time #^sizehumanreadablemtime
+#^map Mt :set metatitle
+
+# Tagging / Marking
+# map t       tag_toggle
+# map ut      tag_remove
+# map "<any>  tag_toggle tag=%any
+map <space> :toggle; down         #$
+map v       invert                #$
+map u
+map uv      push :glob-select<space>*<enter>
+#map V       toggle_visual_mode
+#map uV      toggle_visual_mode reverse=True
+
+# For the nostalgics: Midnight Commander bindings
+map <f-1> doc
+map <f-2> rename
+#^map <f3> display_file
+map <f-4> open
+map <f-5> copy
+map <f-6> cut
+map <f-7> push :shell<enter>mkdir<space>
+map <f-8> push :delete<space>
+###map <f-8> console trash
+map <f-10> quit
+
+# In case you work on a keyboard with dvorak layout
+map <up>       up                    #$
+map <down>     down                  #$
+map <left>     open                  #$
+map <right>    updir                 #$
+map <home>     top                   #$
+map <end>      bottom                #$
+map <pgup>     page-up               #$
+map <pgdn>     page-down             #$
+map <cr>       open                  #$
+###map <DELETE>   console delete
+map <insert>    push :shell<enter>touch<space>
+
+# VIM-like
+map <j>       up                    #$
+map <h>     open                  #$
+map <j>     down                  #$
+map <l>    updir                 #$
+map <home>     top                   #$
+map <end>      bottom                #$
+map <pgup>     page-up               #$
+map <pgdn>     page-down             #$
+
+# Jumping around
+#^map H     history_go -1
+#^map L     history_go 1
+map ]       push hkl #TODO: breaks on files
+map [       push hjl
+#^map }     traverse
+#^map {     traverse_backwards
+#map )     jump_non TODO: didn't get it :[
+
+map gh cd ~
+map ge cd /etc
+map gu cd /usr
+map gd cd /dev
+#^map gl cd  -r .
+#^map gL cd -r %f
+map go cd /opt
+map gv cd /var
+map gm cd /media
+#^map gi eval fm.cd('/run/media/' + os.getenv('USER'))
+map gM cd /mnt
+map gs cd /srv
+map gp cd /tmp
+map gr cd /
+map gz console z%space
+#^map gR eval fm.cd(ranger.RANGERDIR)
+map g/ cd /
+#^map g? cd /usr/share/doc/lf
+
+# External Programs
+map E  $$EDITOR "$f"
+map d
+map du push :shell-wait<enter>du<space>--max-depth=1<space>-h<space>--apparent-size<enter>
+map dU push :shell-wait<enter>du<space>--max-depth=1<space>-h<space>--apparent-size<space>|sort<space>-rh<enter>
+#^map yp yank path
+#^map yd yank dir
+#^map yn yank name
+#^map y. yank name_without_extension
+
+# Filesystem Operations
+map cw push :rename<space>
+map a  rename #^rename_append
+map A  rename #^eval fm.open_console('rename ' + fm.thisfile.relative_path.replace("%", "%%"))
+map I  rename #^eval fm.open_console('rename ' + fm.thisfile.relative_path.replace("%", "%%"), position=7)
+
+map pp paste
+#^ map po paste overwrite=True
+#^map pP paste append=True
+#^map pO paste overwrite=True append=True
+#^map pl paste_symlink relative=False
+#^map pL paste_symlink relative=True
+#^map phl paste_hardlink
+#^map pht paste_hardlinked_subtree
+#^map pd console paste dest=
+#^map p`<any> paste dest=%any_path
+#^map p'<any> paste dest=%any_path
+
+map dD delete
+map dT trash
+
+map dd cut
+#^map ud uncut
+#^map da cut mode=add
+#^map dr cut mode=remove
+#^map dt cut mode=toggle
+
+map y
+map yy copy
+#^map uy uncut
+#^map ya copy mode=add
+#^map yr copy mode=remove
+#^map yt copy mode=toggle
+
+# Searching
+map /  search                 #$
+map n  search-next
+map N  search-prev
+#map ct search_next ordertag
+#map cs search_next ordersize
+#map ci search_next ordermimetype
+#map cc search_next orderctime
+#map cm search_next ordermtime
+#map ca search_next orderatime
+
+# Sorting
+#TODO: O doen't work!
+map or set reverse! 
+#^map oz :set sortby random
+map os :{{
+  :set sortby size; 
+  set noreverse
+}}
+#^map ob chain :set sort=basename;  set noreverse
+map on :{{
+  :set sortby natural;   
+  set noreverse
+}}
+map om :{{
+  :set sortby time;      
+  set noreverse
+}}
+map oc :{{
+  :set sortby ctime;     
+  set noreverse
+}}
+map oa :{{
+  :set sortby atime;     
+  set noreverse
+}}
+#^map ot :set sortby type;      set noreverse
+map oe :{{ 
+  set sortby ext;
+  set noreverse 
+}} #TODO: doens't work
+
+map oS :{{
+  :set sortby size;      
+  set reverse
+}}
+#^map oB :set sortby basename;  set reverse
+map oN :{{
+  :set sortby natural;   
+  set reverse
+}}
+map oM :{{
+  :set sortby time;    
+  set reverse
+}}
+map oC :{{
+  :set sortby ctime;     
+  set reverse
+}}
+map oA :{{
+  :set sortby atime;     
+  set reverse
+}}
+#^map oT :set sortby type;      set reverse
+map oE :{{ 
+  :set sortby ext;
+  set reverse 
+}}
+
+#^map dc get_cumulative_size
+
+# Settings
+map zc :{{
+  set preview!
+  #set ratios 1:1
+}}
+map zd    set dirfirst!
+map zh    set hidden!
+map <C-h> set hidden!
+map <backspace> set hidden!
+map <backspace2> set hidden!
+#^map zI    set flushinput! TODO:
+#^map zi    set preview_images!
+#^map zm    set mouse_enabled!
+#^map zp    set preview_files!
+#^map zP    set preview_directories!
+map zs    set ignoredia!
+#^map zu    set autoupdate_cumulative_size!
+#^map zv    set use_preview_script!
+#^map zf    console filter%space
+#^copymap zf zz
+
+## Filter stack
+#^map .d filter_stack add type d
+#^map .f filter_stack add type f
+#^map .l filter_stack add type l
+#^map .m console filter_stack add mime%space
+#^map .n console filter_stack add name%space
+#^map .# console filter_stack add hash%space
+#^map ." filter_stack add duplicate
+#^map .' filter_stack add unique
+#^map .| filter_stack add or
+#^map .& filter_stack add and
+#^map .! filter_stack add not
+#^map .r filter_stack rotate
+#^map .c filter_stack clear
+#^map .* filter_stack decompose
+#^map .p filter_stack pop
+#^map .. filter_stack show
+
+# Bookmarks
+#^map `<any>  enter_bookmark %any
+#^map '<any>  enter_bookmark %any
+#^map m<any>  set_bookmark %any
+#^map um<any> unset_bookmark %any
+
+#^map m<bg>   draw_bookmarks
+#^copymap m<bg>  um<bg> `<bg> '<bg>
+
+# Generate all the chmod bindings with some python help:
+#eval for arg in "rwxXst": cmd("map +u{0} shell -f chmod u+{0} %s".format(arg))
+#eval for arg in "rwxXst": cmd("map +g{0} shell -f chmod g+{0} %s".format(arg))
+#eval for arg in "rwxXst": cmd("map +o{0} shell -f chmod o+{0} %s".format(arg))
+#eval for arg in "rwxXst": cmd("map +a{0} shell -f chmod a+{0} %s".format(arg))
+#eval for arg in "rwxXst": cmd("map +{0}  shell -f chmod u+{0} %s".format(arg))
+
+#eval for arg in "rwxXst": cmd("map -u{0} shell -f chmod u-{0} %s".format(arg))
+#eval for arg in "rwxXst": cmd("map -g{0} shell -f chmod g-{0} %s".format(arg))
+#eval for arg in "rwxXst": cmd("map -o{0} shell -f chmod o-{0} %s".format(arg))
+#eval for arg in "rwxXst": cmd("map -a{0} shell -f chmod a-{0} %s".format(arg))
+#eval for arg in "rwxXst": cmd("map -{0}  shell -f chmod u-{0} %s".format(arg))
+
+
+
+
+
+# dedicated keys for file opener actions
+#map o &mimeopen $f
+#map O $mimeopen --ask $f
+
+# define a custom 'open' command
+# This command is called when current file is not a directory. You may want to
+# use either file extensions and/or mime types here. Below uses an editor for
+# text files and a file opener for the rest.
+cmd open ${{
+    case $(file --mime-type $f -b) in
+        text/*) $EDITOR $fx;;
+        *) for f in $fx; do setsid $OPENER $f > /dev/null 2> /dev/null & done;;
+    esac
+}}
+
+# define a custom 'rename' command without prompt for overwrite
+# cmd rename %[ -e $1 ] && printf "file exists" || mv $f $1
+# map r push :rename<space>
+
+# make sure trash folder exists
+# %mkdir -p ~/.trash
+
+# move current file or selected files to trash folder
+# (also see 'man mv' for backup/overwrite options)
+cmd trash %set -f; mv $fx ~/.trash
+
+# define a custom 'delete' command
+# cmd delete ${{
+#     set -f
+#     printf "$fx\n"
+#     printf "delete?[y/n]"
+#     read ans
+#     [ $ans = "y" ] && rm -rf $fx
+# }}
+
+# use '<delete>' key for either 'trash' or 'delete' command
+# map <delete> trash
+# map <delete> delete
+
+# extract the current file with the right command
+# (xkcd link: https://xkcd.com/1168/)
+cmd extract ${{
+    set -f
+    case $f in
+        *.tar.bz|*.tar.bz2|*.tbz|*.tbz2) tar xjvf $f;;
+        *.tar.gz|*.tgz) tar xzvf $f;;
+        *.tar.xz|*.txz) tar xJvf $f;;
+        *.zip) unzip $f;;
+        *.rar) unrar x $f;;
+        *.7z) 7z x $f;;
+    esac
+}}
+
+# compress current file or selected files with tar and gunzip
+cmd tar ${{
+    set -f
+    mkdir $1
+    cp -r $fx $1
+    tar czf $1.tar.gz $1
+    rm -rf $1
+}}
+
+# compress current file or selected files with zip
+cmd zip ${{
+    set -f
+    mkdir $1
+    cp -r $fx $1
+    zip -r $1.zip $1
+    rm -rf $1
+}}
+
+cmd mkdir ${{
+    mkdir $1
+}}
+
+cmd touch ${{
+    touch $1
+}}
+
